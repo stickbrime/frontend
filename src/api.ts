@@ -1,6 +1,10 @@
 import type { AuthStatus, Category, CreditStatus, Customer, Order, Product } from './types'
 
 const API = '/api/v1'
+// Backend service URL used for links shown in the "Backend" subpage.
+// In dev the Vite proxy forwards /api to this host; in production set
+// VITE_API_HOST to the deployed backend (e.g. https://my-worker.<acct>.workers.dev).
+export const BACKEND_HOST = import.meta.env.VITE_API_HOST || 'http://42.192.110.219'
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API}${path}`, {

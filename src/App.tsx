@@ -28,7 +28,7 @@ import {
   Trash2,
   X
 } from 'lucide-react'
-import { api } from './api'
+import { api, BACKEND_HOST } from './api'
 import { copy } from './i18n'
 import type { AuthStatus, CartItem, Category, CreditStatus, Customer, Language, Order, Product } from './types'
 
@@ -90,9 +90,11 @@ function App() {
     ? <CartPage t={t} cart={cart} setCart={setCart} />
     : path === '/checkout'
       ? <CheckoutPage t={t} cart={cart} clearCart={() => setCart([])} customerId={customerId} setCustomerId={setCustomerId} auth={auth} />
-      : path === '/account'
-        ? <AccountPage t={t} customerId={customerId} setCustomerId={setCustomerId} auth={auth} refreshAuth={refreshAuth} />
-        : <OrderPage t={t} addToCart={addToCart} locked={locked} cart={cart} />
+        : path === '/account'
+          ? <AccountPage t={t} customerId={customerId} setCustomerId={setCustomerId} auth={auth} refreshAuth={refreshAuth} />
+          : path === '/backend'
+            ? <BackendPage />
+            : <OrderPage t={t} addToCart={addToCart} locked={locked} cart={cart} />
 
   return (
     <div className="app-shell" lang={language === 'zh' ? 'zh-CN' : 'en'}>
@@ -349,6 +351,49 @@ function CheckoutPage({ t, cart, clearCart, customerId, setCustomerId, auth }: {
       <aside className="checkout-summary order-summary"><span className="eyebrow">{t.currentOrder}</span>{cart.map(item => <div className="mini-item" key={item.product_id}><img src={productArt[item.product_name] ?? fallbackArt} alt="" /><div><strong>{item.product_name}</strong><small>{item.quantity} × ${Number(item.price).toFixed(2)}</small></div><span>${(item.quantity * Number(item.price)).toFixed(2)}</span></div>)}<div className="summary-total"><span>{t.total}</span><strong>${total.toFixed(2)}</strong></div>{error && <div className="inline-error">{error}</div>}<button className="button button-dark full" disabled={submitting}>{submitting ? <><LoaderCircle className="spin" />{t.placing}</> : <>{t.placeOrder}<ArrowRight size={17} /></>}</button><small className="secure-note"><LockKeyhole size={13} /> {t.secureCheckout}</small></aside>
     </form>
   </div></section>
+}
+
+function BackendPage() {
+  return (
+    <>
+      <style>{`
+        .backend-links { display: flex; flex-direction: column; gap: 12px; max-width: 720px; margin: 24px 0 8px; }
+        .backend-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border: 1px solid #e2dcc8; border-radius: 10px; text-decoration: none; color: inherit; background: #fff; }
+        .backend-link:hover { background: #f7f3e9; }
+        .link-label { font-weight: 600; }
+        .link-href { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; color: #8a7f6b; word-break: break-all; }
+        .backend-note { color: #8a7f6b; font-size: 14px; max-width: 720px; }
+      `}</style>
+      <section className="page-section">
+        <div className="container narrow-page">
+          <PageTitle eyebrow="BACKEND" title="Backend Services" subtitle="The services that power Whale's ordering system." />
+          <nav className="backend-links">
+            <a className="backend-link" href={`${BACKEND_HOST}/docs`} target="_blank" rel="noopener noreferrer">
+              <span className="link-label">API Documentation (Swagger UI)</span>
+              <span className="link-href">{BACKEND_HOST}/docs</span>
+            </a>
+            <a className="backend-link" href={`${BACKEND_HOST}/redoc`} target="_blank" rel="noopener noreferrer">
+              <span className="link-label">API Documentation (ReDoc)</span>
+              <span className="link-href">{BACKEND_HOST}/redoc</span>
+            </a>
+            <a className="backend-link" href={`${BACKEND_HOST}/api/v1`} target="_blank" rel="noopener noreferrer">
+              <span className="link-label">REST API (v1)</span>
+              <span className="link-href">{BACKEND_HOST}/api/v1</span>
+            </a>
+            <a className="backend-link" href={`${BACKEND_HOST}/health`} target="_blank" rel="noopener noreferrer">
+              <span className="link-label">Health check</span>
+              <span className="link-href">{BACKEND_HOST}/health</span>
+            </a>
+            <a className="backend-link" href={`${BACKEND_HOST}/api/v1/auth/login`} target="_blank" rel="noopener noreferrer">
+              <span className="link-label">Admin / Login</span>
+              <span className="link-href">{BACKEND_HOST}/api/v1/auth/login</span>
+            </a>
+          </nav>
+          <p className="backend-note">Whale's storefront is a static site on GitHub Pages. Use the links above to reach the live backend service that powers the menu, orders, and accounts.</p>
+        </div>
+      </section>
+    </>
+  )
 }
 
 function AccountPage({ t, customerId, setCustomerId, auth, refreshAuth }: { t: any; customerId: number | null; setCustomerId: (id: number | null) => void; auth: AuthStatus | null; refreshAuth: () => Promise<void> }) {
